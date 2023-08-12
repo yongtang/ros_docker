@@ -7,6 +7,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         potrace \
         dmidecode \
         imagemagick\
+        gpsd-clients \
         python3-pip \
         ros-foxy-gpsd-client \
         ros-foxy-teleop-twist-joy \
