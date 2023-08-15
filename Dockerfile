@@ -20,6 +20,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         ros-noetic-microstrain-3dmgx2-imu \
         ros-noetic-joint-state-publisher \
         ros-noetic-robot-state-publisher \
-        ros-noetic-geometry2 \
-        ros-noetic-navigation && \
+        ros-noetic-navigation \
+        ros-noetic-tf2 && \
     DEBIAN_FRONTEND=noninteractive apt-get -y -q upgrade && rm -rf /var/lib/apt/lists/*
