@@ -8,8 +8,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         dmidecode \
         imagemagick\
         gpsd-clients \
-        v4l2loopback-dkms \
-        v4l2loopback-utils \
         ffmpeg firejail \
         python3-pip \
         ros-foxy-gpsd-client \
