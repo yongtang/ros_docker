@@ -8,11 +8,12 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         dmidecode \
         imagemagick\
         gpsd-clients \
-        ffmpeg firejail \
+        ffmpeg \
         python3-pip \
         ros-foxy-gpsd-client \
         ros-foxy-teleop-twist-joy \
         ros-foxy-robot-localization \
+        ros-noetic-cv-camera \
         ros-noetic-gpsd-client \
         ros-noetic-teleop-twist-joy \
         ros-noetic-jackal-msgs \
