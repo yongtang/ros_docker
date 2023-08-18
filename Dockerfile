@@ -3,6 +3,7 @@ FROM ros:foxy-ros1-bridge
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y -q --no-install-recommends install \
         git \
+        curl \
         gpsd \
         potrace \
         dmidecode \
