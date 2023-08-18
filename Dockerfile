@@ -23,6 +23,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         ros-noetic-rosserial-python \
         ros-noetic-rosserial-server \
         ros-noetic-microstrain-3dmgx2-imu \
+        ros-noetic-microstrain-inertial-driver \
         ros-noetic-joint-state-publisher \
         ros-noetic-robot-state-publisher \
         ros-noetic-robot-localization \
