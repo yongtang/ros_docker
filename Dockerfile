@@ -5,6 +5,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         git \
         curl \
         gpsd \
+        udev \
         potrace \
         dmidecode \
         imagemagick\
