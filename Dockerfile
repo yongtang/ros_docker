@@ -19,6 +19,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         ros-noetic-gpsd-client \
         ros-noetic-teleop-twist-joy \
         ros-noetic-rplidar-ros \
+        ros-noetic-urg-node \
         ros-noetic-jackal-msgs \
         ros-noetic-jackal-control \
         ros-noetic-jackal-description \
