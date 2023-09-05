@@ -37,3 +37,5 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         ros-noetic-roslint \
         ros-noetic-tf2 && \
     DEBIAN_FRONTEND=noninteractive apt-get -y -q upgrade && rm -rf /var/lib/apt/lists/*
+
+RUN git clone https://github.com/Slamtec/rplidar_sdk.git /opt/rplidar_sdk && (cd /opt/rplidar_sdk && make)
