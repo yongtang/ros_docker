@@ -33,6 +33,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         ros-noetic-navigation \
         ros-noetic-ros-control \
         ros-noetic-slam-gmapping \
+        ros-noetic-image-transport-plugins \
         ros-noetic-nmea-msgs \
         ros-noetic-roslint \
         ros-noetic-tf2 && \
