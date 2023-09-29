@@ -46,3 +46,5 @@ RUN mkdir -p /opt/ros_catkin && \
     git clone https://github.com/jackal/jackal_robot.git -b noetic-devel /opt/ros_catkin/src/jackal_robot && \
     sed -i.bak 's/115200/57600/g' /opt/ros_catkin/src/jackal_robot/jackal_base/src/jackal_base.cpp
 RUN bash -x -e -c '. /opt/ros/noetic/setup.bash && cd /opt/ros_catkin && catkin_make_isolated --install --ignore-pkg autodock_examples autodock_sim --cmake-args -DCMAKE_BUILD_TYPE=Release'
+
+RUN python3 -m pip install -U pip -vvv
