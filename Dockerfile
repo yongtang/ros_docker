@@ -48,4 +48,5 @@ RUN mkdir -p /opt/ros_catkin && \
 RUN bash -x -e -c '. /opt/ros/noetic/setup.bash && cd /opt/ros_catkin && catkin_make_isolated --install --ignore-pkg autodock_examples autodock_sim --cmake-args -DCMAKE_BUILD_TYPE=Release'
 
 RUN python3 -m pip install -U pip -vvv
-RUN python3 -m pip install -r requirements.txt
+ADD requirements.txt /tmp/requirements.txt
+RUN python3 -m pip install -r /tmp/requirements.txt
