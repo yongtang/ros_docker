@@ -1,0 +1,11 @@
+FROM node
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y -q --no-install-recommends install \
+        xdg-utils
+
+RUN rm -rf /opt/client-sdk-js && git clone https://github.com/livekit/client-sdk-js.git /opt/client-sdk-js
+
+WORKDIR /opt/client-sdk-js
+
+RUN echo 'window.onload = function() { console.log("window is fully loaded, click button"); document.getElementById("connect-button").click(); }' >> example/sample.ts  && git status && git diff && yarn install
