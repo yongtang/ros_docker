@@ -7,6 +7,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         gpsd \
         udev \
         potrace \
+        usbutils \
         dmidecode \
         imagemagick\
         gpsd-clients \
