@@ -1,5 +1,10 @@
 FROM ros:humble
 
+RUN git clone https://github.com/Slamtec/rplidar_sdk.git /tmp/rplidar_sdk && \
+    (cd /tmp/rplidar_sdk && make) && \
+    cp /tmp/rplidar_sdk/output/Linux/Release/simple_grabber /usr/local/bin/ && \
+    rm -rf /tmp/rplidar_sdk
+
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y -q --no-install-recommends install \
         git \
@@ -20,10 +25,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         ros-humble-image-transport-plugins && \
     DEBIAN_FRONTEND=noninteractive apt-get -y -q upgrade && rm -rf /var/lib/apt/lists/*
 
-RUN git clone https://github.com/Slamtec/rplidar_sdk.git /tmp/rplidar_sdk && \
-    (cd /tmp/rplidar_sdk && make) && \
-    cp /tmp/rplidar_sdk/output/Linux/Release/simple_grabber /usr/local/bin/ && \
-    rm -rf /tmp/rplidar_sdk
+RUN git clone https://github.com/clydemcqueen/opencv_cam.git /opt/ros/local/src/opencv_cam && \
+    git clone https://github.com/ptrmu/ros2_shared.git /opt/ros/local/src/ros2_shared && \
+    sed -i 's/^  sensor_msgs/  sensor_msgs\n  ros2_shared/g' /opt/ros/local/src/opencv_cam/CMakeLists.txt && \
+    bash -x -e -c 'source /opt/ros/humble/setup.bash && cd /opt/ros/local && colcon build'
 
 RUN python3 -m pip install -U pip -vvv
 ADD requirements.txt /tmp/requirements.txt
