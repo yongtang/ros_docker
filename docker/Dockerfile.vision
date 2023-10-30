@@ -30,7 +30,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         ros-humble-camera-calibration-parsers && \
     DEBIAN_FRONTEND=noninteractive apt-get -y -q upgrade && rm -rf /var/lib/apt/lists/*
 
-RUN git clone https://github.com/ros-controls/ros2_control_demos -b master /opt/ros/local/src/ros2_control_demos && \
+RUN git clone https://github.com/ros-controls/ros2_control_demos -b humble /opt/ros/local/src/ros2_control_demos && \
     git clone https://github.com/clydemcqueen/opencv_cam.git /opt/ros/local/src/opencv_cam && \
     git clone https://github.com/ptrmu/ros2_shared.git /opt/ros/local/src/ros2_shared && \
     sed -i 's/^  sensor_msgs/  sensor_msgs\n  ros2_shared/g' /opt/ros/local/src/opencv_cam/CMakeLists.txt && \
