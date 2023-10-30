@@ -19,10 +19,11 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         python3-pip \
         ros-humble-xacro \
         ros-humble-bno055 \
-        ros-humble-usb-cam \
+        ros-humble-cv-bridge \
         ros-humble-rplidar-ros \
         ros-humble-gpsd-client \
-        ros-humble-image-transport-plugins && \
+        ros-humble-image-transport-plugins \
+        ros-humble-camera-calibration-parsers && \
     DEBIAN_FRONTEND=noninteractive apt-get -y -q upgrade && rm -rf /var/lib/apt/lists/*
 
 RUN git clone https://github.com/clydemcqueen/opencv_cam.git /opt/ros/local/src/opencv_cam && \
