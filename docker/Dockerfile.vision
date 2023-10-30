@@ -25,15 +25,14 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         ros-humble-slam-toolbox \
         ros-humble-controller-manager \
         ros-humble-image-transport-plugins \
-        ros-humble-camera-calibration-parsers \
-        ros-humble-generate-parameter-library-example && \
+        ros-humble-camera-calibration-parsers && \
     DEBIAN_FRONTEND=noninteractive apt-get -y -q upgrade && rm -rf /var/lib/apt/lists/*
 
 RUN git clone https://github.com/ros-controls/ros2_control_demos -b master /opt/ros/local/src/ros2_control_demos && \
     git clone https://github.com/clydemcqueen/opencv_cam.git /opt/ros/local/src/opencv_cam && \
     git clone https://github.com/ptrmu/ros2_shared.git /opt/ros/local/src/ros2_shared && \
     sed -i 's/^  sensor_msgs/  sensor_msgs\n  ros2_shared/g' /opt/ros/local/src/opencv_cam/CMakeLists.txt && \
-    bash -x -e -c 'source /opt/ros/humble/setup.bash && cd /opt/ros/local && colcon build'
+    bash -x -e -c 'source /opt/ros/humble/setup.bash && cd /opt/ros/local && colcon build --packages-select ros2_shared opencv_cam ros2_control_demo_description ros2_control_demo_example_10'
 
 RUN python3 -m pip install -U pip -vvv
 ADD requirements.txt /tmp/requirements.txt
