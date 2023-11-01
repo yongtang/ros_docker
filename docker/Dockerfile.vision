@@ -16,6 +16,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         usbutils \
         dmidecode \
         gpsd-clients \
+        python3-smbus \
+        i2c-tools \
         ffmpeg \
         python3-pip \
         ros-humble-xacro \
