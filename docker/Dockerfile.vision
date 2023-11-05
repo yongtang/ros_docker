@@ -20,6 +20,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         gpsd-clients \
         python3-pip \
         python3-smbus \
+        python3-pigpio \
         python3-psutil \
         python3-pyproj \
         python3-geojson \
