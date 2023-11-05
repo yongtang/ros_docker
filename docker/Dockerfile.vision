@@ -17,6 +17,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         dmidecode \
         gpsd-clients \
         python3-smbus \
+        python3-pigpio \
         i2c-tools \
         ffmpeg \
         python3-pip \
