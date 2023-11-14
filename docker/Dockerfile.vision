@@ -19,11 +19,11 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         i2c-tools \
         gpsd-clients \
         python3-pip \
+        python3-lgpio \
         python3-smbus \
         python3-psutil \
         python3-pyproj \
         python3-geojson \
-        python3-rpi.gpio \
         python3-gpiozero \
         ros-humble-xacro \
         ros-humble-bno055 \
