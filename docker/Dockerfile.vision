@@ -27,6 +27,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         ros-humble-xacro \
         ros-humble-bno055 \
         ros-humble-cv-bridge \
+        ros-humble-navigation2 \
         ros-humble-rplidar-ros \
         ros-humble-gpsd-client \
         ros-humble-slam-toolbox \
