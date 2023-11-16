@@ -34,6 +34,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         ros-humble-slam-toolbox \
         ros-humble-ros2-control \
         ros-humble-ros2-controllers \
+        ros-humble-teleop-twist-joy \
         ros-humble-controller-manager \
         ros-humble-image-transport-plugins \
         ros-humble-topic-based-ros2-control \
