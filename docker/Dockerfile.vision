@@ -1,10 +1,15 @@
-FROM ros:humble as rplidar
+FROM ros:humble as build
 
 RUN git clone https://github.com/Slamtec/rplidar_sdk.git /tmp/rplidar_sdk
 RUN (cd /tmp/rplidar_sdk && make)
 
+RUN git clone -b v79 --depth 1 https://github.com/joan2937/pigpio.git /tmp/pigpio
+RUN (cd /tmp/pigpio && make)
+
 FROM ros:humble
-COPY --from=rplidar /tmp/rplidar_sdk/output/Linux/Release/simple_grabber /usr/local/bin/
+COPY --from=build /tmp/rplidar_sdk/output/Linux/Release/simple_grabber /usr/local/bin/
+COPY --from=build /tmp/pigpio/pigpiod /usr/local/bin/
+COPY --from=build /tmp/pigpio/libpigpio.so* /usr/local/lib/
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y -q --no-install-recommends install \
