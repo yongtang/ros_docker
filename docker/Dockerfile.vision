@@ -3,14 +3,21 @@ FROM ros:humble as build
 RUN git clone https://github.com/Slamtec/rplidar_sdk.git /tmp/rplidar_sdk
 RUN (cd /tmp/rplidar_sdk && make)
 
-RUN git clone -b v79 --depth 1 https://github.com/joan2937/pigpio.git /tmp/pigpio
-RUN (cd /tmp/pigpio && make)
-
 FROM ros:humble
-ARG TARGETPLATFORM
 COPY --from=build /tmp/rplidar_sdk/output/Linux/Release/simple_grabber /usr/local/bin/
-COPY --from=build /tmp/pigpio/pigpiod /usr/local/bin/
-COPY --from=build /tmp/pigpio/libpigpio.so* /usr/local/lib/
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y -q --no-install-recommends install \
+        ca-certificates curl gnupg && \
+        rm -rf /var/lib/apt/lists/*
+
+RUN install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --yes --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    chmod a+r /etc/apt/keyrings/docker.gpg && \
+    echo \
+      "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+      "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+      tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y -q --no-install-recommends install \
@@ -22,6 +29,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         usbutils \
         dmidecode \
         i2c-tools \
+        docker-ce-cli \
         python3-pip \
         python3-lgpio \
         python3-smbus \
