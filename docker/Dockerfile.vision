@@ -40,6 +40,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         python3-pyproj \
         python3-geojson \
         python3-requests \
+        python3-aiosqlite \
         python3-transforms3d \
         ros-humble-xacro \
         ros-humble-bno055 \
