@@ -1,53 +1,77 @@
-FROM ros:foxy-ros1-bridge
+FROM ros:humble as build
+
+RUN git clone https://github.com/Slamtec/rplidar_sdk.git /tmp/rplidar_sdk
+RUN (cd /tmp/rplidar_sdk && make)
+
+FROM ros:humble
+COPY --from=build /tmp/rplidar_sdk/output/Linux/Release/simple_grabber /usr/local/bin/
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y -q --no-install-recommends install \
+        ca-certificates curl gnupg && \
+        rm -rf /var/lib/apt/lists/*
+
+RUN install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --yes --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    chmod a+r /etc/apt/keyrings/docker.gpg && \
+    echo \
+      "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+      "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+      tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y -q --no-install-recommends install \
         git \
         curl \
-        gpsd \
         udev \
+        ffmpeg \
         potrace \
         usbutils \
         dmidecode \
-        imagemagick\
-        gpsd-clients \
-        ffmpeg \
+        i2c-tools \
+        docker-ce-cli \
         python3-pip \
-        ros-foxy-gpsd-client \
-        ros-foxy-teleop-twist-joy \
-        ros-foxy-robot-localization \
-        ros-noetic-cv-camera \
-        ros-noetic-gpsd-client \
-        ros-noetic-teleop-twist-joy \
-        ros-noetic-rplidar-ros \
-        ros-noetic-urg-node \
-        ros-noetic-jackal-msgs \
-        ros-noetic-jackal-control \
-        ros-noetic-jackal-description \
-        ros-noetic-rosserial-python \
-        ros-noetic-rosserial-server \
-        ros-noetic-microstrain-3dmgx2-imu \
-        ros-noetic-microstrain-inertial-driver \
-        ros-noetic-joint-state-publisher \
-        ros-noetic-robot-state-publisher \
-        ros-noetic-robot-localization \
-        ros-noetic-navigation \
-        ros-noetic-ros-control \
-        ros-noetic-slam-gmapping \
-        ros-noetic-image-transport-plugins \
-        ros-noetic-nmea-msgs \
-        ros-noetic-roslint \
-        ros-noetic-tf2 && \
+        python3-pil \
+        python3-jwt \
+        python3-redis \
+        python3-lgpio \
+        python3-smbus \
+        python3-psutil \
+        python3-pyproj \
+        python3-geojson \
+        python3-requests \
+        python3-aiosqlite \
+        python3-sqlalchemy \
+        python3-transforms3d \
+        ros-humble-xacro \
+        ros-humble-bno055 \
+        ros-humble-twist-mux \
+        ros-humble-cv-bridge \
+        ros-humble-navigation2 \
+        ros-humble-rplidar-ros \
+        ros-humble-nav2-bringup \
+        ros-humble-slam-toolbox \
+        ros-humble-ros2-control \
+        ros-humble-ros2-controllers \
+        ros-humble-teleop-twist-joy \
+        ros-humble-nmea-navsat-driver \
+        ros-humble-robot-localization \
+        ros-humble-controller-manager \
+        ros-humble-image-transport-plugins \
+        ros-humble-topic-based-ros2-control \
+        ros-humble-camera-calibration-parsers && \
     DEBIAN_FRONTEND=noninteractive apt-get -y -q upgrade && rm -rf /var/lib/apt/lists/*
 
-RUN git clone https://github.com/Slamtec/rplidar_sdk.git /opt/rplidar_sdk && (cd /opt/rplidar_sdk && make)
-
-RUN mkdir -p /opt/ros_catkin && \
-    git clone https://github.com/osrf/autodock.git /opt/ros_catkin/src/autodock && \
-    git clone https://github.com/jackal/jackal_robot.git -b noetic-devel /opt/ros_catkin/src/jackal_robot && \
-    sed -i.bak 's/115200/57600/g' /opt/ros_catkin/src/jackal_robot/jackal_base/src/jackal_base.cpp
-RUN bash -x -e -c '. /opt/ros/noetic/setup.bash && cd /opt/ros_catkin && catkin_make_isolated --install --ignore-pkg autodock_examples autodock_sim --cmake-args -DCMAKE_BUILD_TYPE=Release'
+RUN git clone https://github.com/clydemcqueen/opencv_cam.git /opt/ros/local/src/opencv_cam && \
+    git clone https://github.com/ptrmu/ros2_shared.git /opt/ros/local/src/ros2_shared && \
+    sed -i 's/^  sensor_msgs/  sensor_msgs\n  ros2_shared/g' /opt/ros/local/src/opencv_cam/CMakeLists.txt && \
+    bash -x -e -c 'source /opt/ros/humble/setup.bash && cd /opt/ros/local && colcon build'
 
 RUN python3 -m pip install -U pip -vvv
 ADD requirements.txt /tmp/requirements.txt
 RUN python3 -m pip install -r /tmp/requirements.txt
+RUN rm -f /tmp/requirements.txt
+
+RUN curl -L https://raw.githubusercontent.com/DFRobot/DFRobot_INA219/master/Python/RespberryPi/DFRobot_INA219.py -o $(python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')/DFRobot_INA219.py
+
+RUN sed -i 's@$ROS_DISTRO@local/install@g' /ros_entrypoint.sh

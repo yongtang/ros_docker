@@ -1,5 +1,0 @@
-FROM python:3.10
-
-RUN python3 -m pip install -U pip -vvv
-ADD requirements.txt /tmp/requirements.txt
-RUN python3 -m pip install -r /tmp/requirements.txt
