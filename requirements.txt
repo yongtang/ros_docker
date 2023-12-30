@@ -5,7 +5,6 @@ requests==2.31.0
 casbin==1.19.0
 pillow==10.0.1
 bleak==0.20.2
-redis==4.6.0
 SQLAlchemy==2.0.17
 PyJWT==2.7.0
 torch==2.1.0
