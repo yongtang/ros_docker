@@ -31,6 +31,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         i2c-tools \
         docker-ce-cli \
         python3-pip \
+        python3-pil \
         python3-redis \
         python3-lgpio \
         python3-smbus \
