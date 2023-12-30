@@ -5,6 +5,5 @@ requests==2.31.0
 casbin==1.19.0
 bleak==0.20.2
 SQLAlchemy==2.0.17
-PyJWT==2.7.0
 torch==2.1.0
 gpiozero==2.0
