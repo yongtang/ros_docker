@@ -1,7 +1,6 @@
 grpcio==1.57.0
 grpcio-tools==1.57.0
 aiosqlite==0.19.0
-requests==2.31.0
 casbin==1.19.0
 bleak==0.20.2
 SQLAlchemy==2.0.17
