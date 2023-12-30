@@ -1,5 +1,5 @@
 grpcio==1.57.0
 grpcio-tools==1.60.0
 casbin==1.19.0
-torch==2.1.0
+torch==2.1.2
 gpiozero==2.0
