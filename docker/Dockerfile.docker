@@ -29,6 +29,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         usbutils \
         dmidecode \
         i2c-tools \
+        redis-server \
         docker-ce-cli \
         docker-compose-plugin \
         python3-pip \
