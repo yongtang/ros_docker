@@ -25,6 +25,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
         curl \
         udev \
         potrace \
+        iproute2 \
         usbutils \
         dmidecode \
         i2c-tools \
