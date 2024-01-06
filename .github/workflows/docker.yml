@@ -36,6 +36,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
       - uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.DOCKER_GITHUB }}
           script: |
             github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
