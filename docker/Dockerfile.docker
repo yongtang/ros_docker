@@ -21,6 +21,7 @@ RUN install -m 0755 -d /etc/apt/keyrings && \
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y -q --no-install-recommends install \
+        jq \
         git \
         curl \
         udev \
@@ -76,5 +77,10 @@ RUN python3 -m pip install -r /tmp/requirements.txt
 RUN rm -f /tmp/requirements.txt
 
 RUN curl -L https://raw.githubusercontent.com/DFRobot/DFRobot_INA219/master/Python/RespberryPi/DFRobot_INA219.py -o $(python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')/DFRobot_INA219.py
+
+RUN ARCH=$(dpkg --print-architecture); \
+    RELEASE=$(curl --silent "https://api.github.com/repos/distribution/distribution/releases/latest" | jq -r .tag_name); \
+    curl -o /tmp/registry.tar.gz -L https://github.com/distribution/distribution/releases/download/${RELEASE}/registry_${RELEASE#v}_linux_${ARCH}.tar.gz && \
+    tar -xzf /tmp/registry.tar.gz -C /usr/bin/ registry && registry -v
 
 RUN sed -i 's@$ROS_DISTRO@local/install@g' /ros_entrypoint.sh
