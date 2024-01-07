@@ -80,7 +80,10 @@ RUN curl -L https://raw.githubusercontent.com/DFRobot/DFRobot_INA219/master/Pyth
 
 RUN ARCH=$(dpkg --print-architecture); \
     RELEASE=$(curl --silent "https://api.github.com/repos/distribution/distribution/releases/latest" | jq -r .tag_name); \
-    curl -o /tmp/registry.tar.gz -L https://github.com/distribution/distribution/releases/download/${RELEASE}/registry_${RELEASE#v}_linux_${ARCH}.tar.gz && \
-    tar -xzf /tmp/registry.tar.gz -C /usr/bin/ registry && registry -v
+    curl --silent -o /tmp/registry.tar.gz -L https://github.com/distribution/distribution/releases/download/${RELEASE}/registry_${RELEASE#v}_linux_${ARCH}.tar.gz && \
+    tar -xzf /tmp/registry.tar.gz -C /usr/bin/ registry && \
+    mkdir -p /etc/docker && \
+    curl --silent -o /etc/docker/registry.config.yaml -L https://raw.githubusercontent.com/distribution/distribution-library-image/master/config-example.yml && \
+    registry -v
 
 RUN sed -i 's@$ROS_DISTRO@local/install@g' /ros_entrypoint.sh
