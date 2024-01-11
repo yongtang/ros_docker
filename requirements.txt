@@ -4,3 +4,4 @@ casbin==1.34.0
 redis==5.0.1
 torch==2.1.2
 gpiozero==2.0
+SQLAlchemy==2.0.25
