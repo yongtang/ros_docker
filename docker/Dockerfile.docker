@@ -86,4 +86,10 @@ RUN ARCH=$(dpkg --print-architecture); \
     curl --silent -o /etc/docker/registry.config.yaml -L https://raw.githubusercontent.com/distribution/distribution-library-image/master/config-example.yml && \
     registry -v
 
+RUN ARCH=$(dpkg --print-architecture); \
+    RELEASE=$(curl --silent "https://api.github.com/repos/grpc-ecosystem/grpc-health-probe/releases/latest" | jq -r .tag_name); \
+    curl --silent -o /usr/bin/grpc_health_probe -L https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${RELEASE}/grpc_health_probe-linux-${ARCH} && \
+    chmod +x /usr/bin/grpc_health_probe && \
+    grpc_health_probe -version
+
 RUN sed -i 's@$ROS_DISTRO@local/install@g' /ros_entrypoint.sh
