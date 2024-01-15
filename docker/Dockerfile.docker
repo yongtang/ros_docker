@@ -46,6 +46,7 @@ RUN DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get -y -q update && \
         python3-aiosqlite \
         python3-transforms3d \
         ros-humble-moveit-resources-panda-description \
+        ros-humble-moveit-resources-panda-moveit-config \
         ros-humble-xacro \
         ros-humble-bno055 \
         ros-humble-moveit \
