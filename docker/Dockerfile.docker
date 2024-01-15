@@ -50,6 +50,7 @@ RUN DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get -y -q update && \
         ros-humble-moveit \
         ros-humble-twist-mux \
         ros-humble-cv-bridge \
+        ros-humble-topic-tools \
         ros-humble-navigation2 \
         ros-humble-rplidar-ros \
         ros-humble-nav2-bringup \
