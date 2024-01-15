@@ -70,7 +70,6 @@ RUN DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get -y -q update && \
 
 RUN git clone https://github.com/clydemcqueen/opencv_cam.git /opt/ros/local/src/opencv_cam && \
     git clone https://github.com/ptrmu/ros2_shared.git /opt/ros/local/src/ros2_shared && \
-    sed -i 's/^  sensor_msgs/  sensor_msgs\n  ros2_shared/g' /opt/ros/local/src/opencv_cam/CMakeLists.txt && \
     bash -x -e -c 'source /opt/ros/humble/setup.bash && cd /opt/ros/local && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release'
 
 ADD requirements.txt /tmp/requirements.txt
