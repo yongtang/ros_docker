@@ -6,6 +6,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    strategy:
+      matrix:
+        docker: ["vision", "client"]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -20,15 +23,15 @@ jobs:
           password: ${{ secrets.DOCKER_GITLAB }}
       - uses: docker/metadata-action@v5
         with:
-          images: registry.gitlab.com/${{ github.repository }}/vision
+          images: registry.gitlab.com/${{ github.repository }}/${{ matrix.docker }}
           labels: |
-            org.opencontainers.image.title=vision
-        id: vision
+            org.opencontainers.image.title=${{ matrix.docker }}
+        id: docker
       - uses: docker/build-push-action@v5
         with:
           context: .
-          file: tools/docker/Dockerfile.vision
+          file: tools/docker/Dockerfile.${{ matrix.docker }}
           push: true
-          tags: ${{ steps.vision.outputs.tags }}
-          labels: ${{ steps.vision.outputs.labels }}
+          tags: ${{ steps.docker.outputs.tags }}
+          labels: ${{ steps.docker.outputs.labels }}
           platforms: linux/amd64,linux/arm64
