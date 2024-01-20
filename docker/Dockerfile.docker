@@ -30,6 +30,7 @@ RUN DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get -y -q update && \
         usbutils \
         dmidecode \
         i2c-tools \
+        nginx \
         redis-server \
         docker-ce-cli \
         docker-compose-plugin \
