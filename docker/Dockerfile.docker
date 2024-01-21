@@ -27,6 +27,7 @@ RUN DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get -y -q update && \
         git \
         curl \
         udev \
+        chrony \
         potrace \
         iproute2 \
         usbutils \
