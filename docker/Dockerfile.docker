@@ -90,6 +90,13 @@ RUN ARCH=$(dpkg --print-architecture); \
     registry -v
 
 RUN ARCH=$(dpkg --print-architecture); \
+    RELEASE=$(curl --silent "https://api.github.com/repos/caddyserver/caddy/releases/latest" | jq -r .tag_name); \
+    curl --silent -o /tmp/caddy.tar.gz -L https://github.com/caddyserver/caddy/releases/download/${RELEASE}/caddy_${RELEASE#v}_linux_${ARCH}.tar.gz && \
+    tar -xzf /tmp/caddy.tar.gz -C /usr/bin/ caddy && \
+    rm -f /tmp/caddy.tar.gz && \
+    caddy -v
+
+RUN ARCH=$(dpkg --print-architecture); \
     RELEASE=$(curl --silent "https://api.github.com/repos/grpc-ecosystem/grpc-health-probe/releases/latest" | jq -r .tag_name); \
     curl --silent -o /usr/bin/grpc_health_probe -L https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${RELEASE}/grpc_health_probe-linux-${ARCH} && \
     chmod +x /usr/bin/grpc_health_probe && \
