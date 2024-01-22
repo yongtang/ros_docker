@@ -34,6 +34,7 @@ RUN DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get -y -q update && \
         dmidecode \
         i2c-tools \
         redis-server \
+        auto-apt-proxy \
         docker-ce-cli \
         docker-compose-plugin \
         caddy \
