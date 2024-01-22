@@ -80,7 +80,6 @@ RUN rm -rf /log/* && \
     git clone https://github.com/ptrmu/ros2_shared.git /opt/ros/local/src/ros2_shared && \
     bash -x -e -c 'source /opt/ros/humble/setup.bash && cd /opt/ros/local && colcon --log-base /dev/null build --cmake-args -DCMAKE_BUILD_TYPE=Release'
 
-
 ADD requirements.txt /tmp/requirements.txt
 RUN python3 -m pip install -U pip -vvv && python3 -m pip install -r /tmp/requirements.txt && python3 -m pip cache purge && rm -f /tmp/requirements.txt
 
@@ -100,5 +99,7 @@ RUN ARCH=$(dpkg --print-architecture); \
     curl --silent -o /usr/bin/grpc_health_probe -L https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${RELEASE}/grpc_health_probe-linux-${ARCH} && \
     chmod +x /usr/bin/grpc_health_probe && \
     grpc_health_probe -version
+
+ENV XDG_DATA_HOME=/data
 
 RUN sed -i 's@$ROS_DISTRO@local/install@g' /ros_entrypoint.sh
