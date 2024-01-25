@@ -65,8 +65,10 @@ RUN DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get -y -q update && \
         ros-humble-nav2-bringup \
         ros-humble-slam-toolbox \
         ros-humble-ros2-control \
+        ros-humble-image-pipeline \
         ros-humble-ros2-controllers \
         ros-humble-teleop-twist-joy \
+        ros-humble-ament-cmake-nose \
         ros-humble-nmea-navsat-driver \
         ros-humble-robot-localization \
         ros-humble-controller-manager \
@@ -75,9 +77,10 @@ RUN DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get -y -q update && \
     DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get -y -q upgrade && rm -rf /var/lib/apt/lists/*
 
 RUN rm -rf /log/* && \
-    git clone https://github.com/clydemcqueen/opencv_cam.git /opt/ros/local/src/opencv_cam && \
-    git clone https://github.com/ptrmu/ros2_shared.git /opt/ros/local/src/ros2_shared && \
-    git clone https://github.com/PickNikRobotics/topic_based_ros2_control.git /opt/ros/local/src/topic_based_ros2_control && \
+    git clone https://github.com/Box-Robotics/ros2_numpy.git /opt/ros/local/src/ros2_numpy --depth 1 -b humble && \
+    git clone https://github.com/clydemcqueen/opencv_cam.git /opt/ros/local/src/opencv_cam --depth 1 && \
+    git clone https://github.com/ptrmu/ros2_shared.git /opt/ros/local/src/ros2_shared --depth 1 && \
+    git clone https://github.com/PickNikRobotics/topic_based_ros2_control.git /opt/ros/local/src/topic_based_ros2_control --depth 1 && \
     sed -i 's@std::stod(interface.initial_value);@std::stod(interface.initial_value);\n          joint_states_[index][i] = std::stod(interface.initial_value);@g' /opt/ros/local/src/topic_based_ros2_control/src/topic_based_system.cpp && \
     sed -i 's@diff <= trigger_joint_command_threshold_@diff < trigger_joint_command_threshold_@g' /opt/ros/local/src/topic_based_ros2_control/src/topic_based_system.cpp && \
     bash -x -e -c 'source /opt/ros/humble/setup.bash && cd /opt/ros/local && colcon --log-base /dev/null build --cmake-args -DCMAKE_BUILD_TYPE=Release'
