@@ -51,9 +51,10 @@ RUN DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get -y -q update && \
         python3-tenacity \
         python3-aiosqlite \
         python3-transforms3d \
-        ros-humble-moveit-servo \
         ros-humble-moveit-resources-panda-description \
         ros-humble-moveit-resources-panda-moveit-config \
+        ros-humble-ros-testing \
+        ros-humble-ament-cmake-nose \
         ros-humble-xacro \
         ros-humble-bno055 \
         ros-humble-moveit \
@@ -68,10 +69,10 @@ RUN DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get -y -q update && \
         ros-humble-image-pipeline \
         ros-humble-ros2-controllers \
         ros-humble-teleop-twist-joy \
-        ros-humble-ament-cmake-nose \
         ros-humble-nmea-navsat-driver \
         ros-humble-robot-localization \
         ros-humble-controller-manager \
+        ros-humble-gripper-controllers \
         ros-humble-image-transport-plugins \
         ros-humble-camera-calibration-parsers && \
     DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get -y -q upgrade && rm -rf /var/lib/apt/lists/*
@@ -83,6 +84,12 @@ RUN rm -rf /log/* && \
     git clone https://github.com/PickNikRobotics/topic_based_ros2_control.git /opt/ros/local/src/topic_based_ros2_control --depth 1 && \
     sed -i 's@std::stod(interface.initial_value);@std::stod(interface.initial_value);\n          joint_states_[index][i] = std::stod(interface.initial_value);@g' /opt/ros/local/src/topic_based_ros2_control/src/topic_based_system.cpp && \
     sed -i 's@diff <= trigger_joint_command_threshold_@diff < trigger_joint_command_threshold_@g' /opt/ros/local/src/topic_based_ros2_control/src/topic_based_system.cpp && \
+    (cd /opt/ros/local/src/topic_based_ros2_control/ && git diff) && \
+    git clone https://github.com/ros-planning/moveit2.git /tmp/moveit2 --depth 1 -b humble && \
+    sed -i 's@for (size_t i = 0; i < 500; ++i)@while (true) // for (size_t i = 0; i < 500; ++i)@g' /tmp/moveit2/moveit_ros/moveit_servo/src/cpp_interface_demo/pose_tracking_demo.cpp && \
+    sed -i 's@target_pose_pub->publish@// target_pose_pub->publish@g' /tmp/moveit2/moveit_ros/moveit_servo/src/cpp_interface_demo/pose_tracking_demo.cpp && \
+    (cd /tmp/moveit2/ && git diff) && \
+    mv /tmp/moveit2/moveit_ros/moveit_servo /opt/ros/local/src/moveit_servo && rm -rf /tmp/moveit2 && \
     bash -x -e -c 'source /opt/ros/humble/setup.bash && cd /opt/ros/local && colcon --log-base /dev/null build --cmake-args -DCMAKE_BUILD_TYPE=Release'
 
 ADD requirements.txt /tmp/requirements.txt
