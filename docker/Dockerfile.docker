@@ -86,8 +86,9 @@ RUN rm -rf /log/* && \
     sed -i 's@diff <= trigger_joint_command_threshold_@diff < trigger_joint_command_threshold_@g' /opt/ros/local/src/topic_based_ros2_control/src/topic_based_system.cpp && \
     (cd /opt/ros/local/src/topic_based_ros2_control/ && git diff) && \
     git clone https://github.com/ros-planning/moveit2.git /tmp/moveit2 --depth 1 -b humble && \
-    sed -i 's@for (size_t i = 0; i < 500; ++i)@while (true) // for (size_t i = 0; i < 500; ++i)@g' /tmp/moveit2/moveit_ros/moveit_servo/src/cpp_interface_demo/pose_tracking_demo.cpp && \
-    sed -i 's@target_pose_pub->publish@// target_pose_pub->publish@g' /tmp/moveit2/moveit_ros/moveit_servo/src/cpp_interface_demo/pose_tracking_demo.cpp && \
+    sed -i 's@^  target_pose.pose.position.x += 0.1;@  // target_pose.pose.position.x += 0.1;@' /tmp/moveit2/moveit_ros/moveit_servo/src/cpp_interface_demo/pose_tracking_demo.cpp && \
+    sed -i '/Run the pose tracking in a new thread/,+21d' /tmp/moveit2/moveit_ros/moveit_servo/src/cpp_interface_demo/pose_tracking_demo.cpp && \
+    sed -i 's@target_pose_pub->publish(target_pose);@target_pose_pub->publish(target_pose);\n  rclcpp::WallRate loop_rate(50);\n  while(true)\n  {\n    moveit_servo::PoseTrackingStatusCode tracking_status=tracker.moveToPose(lin_tol,rot_tol,0.1);\n    RCLCPP_INFO_STREAM(LOGGER,"Pose tracker exited with status: "<< moveit_servo::POSE_TRACKING_STATUS_CODE_MAP.at(tracking_status));\n    loop_rate.sleep();\n  }@' /tmp/moveit2/moveit_ros/moveit_servo/src/cpp_interface_demo/pose_tracking_demo.cpp && \
     (cd /tmp/moveit2/ && git diff) && \
     mv /tmp/moveit2/moveit_ros/moveit_servo /opt/ros/local/src/moveit_servo && rm -rf /tmp/moveit2 && \
     bash -x -e -c 'source /opt/ros/humble/setup.bash && cd /opt/ros/local && colcon --log-base /dev/null build --cmake-args -DCMAKE_BUILD_TYPE=Release'
