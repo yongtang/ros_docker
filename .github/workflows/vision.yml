@@ -8,7 +8,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        docker: ["vision", "client"]
+        docker: ["vision"]
     steps:
       - uses: actions/checkout@v4
         with:
