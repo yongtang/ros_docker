@@ -73,6 +73,7 @@ RUN DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get -y -q update && \
         ros-humble-robot-localization \
         ros-humble-controller-manager \
         ros-humble-gripper-controllers \
+        ros-humble-moveit-ros-perception \
         ros-humble-image-transport-plugins \
         ros-humble-camera-calibration-parsers && \
     DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get -y -q upgrade && rm -rf /var/lib/apt/lists/*
