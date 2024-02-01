@@ -1,86 +1,17 @@
 FROM ros:humble as build
 
-RUN git clone https://github.com/Slamtec/rplidar_sdk.git /tmp/rplidar_sdk
-RUN (cd /tmp/rplidar_sdk && make)
-
-FROM ros:humble
-COPY --from=build /tmp/rplidar_sdk/output/Linux/Release/simple_grabber /usr/local/bin/
-
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y -q update && \
-    DEBIAN_FRONTEND=noninteractive apt-get -y -q --no-install-recommends install \
-        ca-certificates curl gnupg && \
-        rm -rf /var/lib/apt/lists/*
-
-RUN install -m 0755 -d /etc/apt/keyrings && \
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --yes --dearmor -o /etc/apt/keyrings/docker.gpg && \
-    chmod a+r /etc/apt/keyrings/docker.gpg && \
-    echo \
-      "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-      "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
-      tee /etc/apt/sources.list.d/docker.list > /dev/null && \
-    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --yes --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg && \
-    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list
-
-RUN DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get -y -q update && \
-    DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get -y -q --no-install-recommends install \
+RUN DEBIAN_FRONTEND=noninteractive apt -y -q update && \
+    DEBIAN_FRONTEND=noninteractive apt -y -q upgrade --no-install-recommends && \
+    DEBIAN_FRONTEND=noninteractive apt -y -q install --no-install-recommends \
         jq \
         git \
-        curl \
-        udev \
-        chrony \
-        potrace \
-        iproute2 \
-        usbutils \
-        dmidecode \
-        i2c-tools \
-        redis-server \
-        apt-cacher-ng \
-        auto-apt-proxy \
-        docker-ce-cli \
-        docker-compose-plugin \
-        caddy \
-        python3-pip \
-        python3-pil \
-        python3-jwt \
-        python3-lgpio \
-        python3-smbus \
-        python3-psutil \
-        python3-pyproj \
-        python3-geojson \
-        python3-requests \
-        python3-tenacity \
-        python3-aiosqlite \
-        python3-transforms3d \
-        ros-humble-moveit-resources-panda-description \
-        ros-humble-moveit-resources-panda-moveit-config \
-        ros-humble-ros-testing \
-        ros-humble-ament-cmake-nose \
-        ros-humble-xacro \
-        ros-humble-bno055 \
+        ros-dev-tools \
         ros-humble-moveit \
-        ros-humble-twist-mux \
-        ros-humble-cv-bridge \
-        ros-humble-topic-tools \
-        ros-humble-navigation2 \
-        ros-humble-rplidar-ros \
-        ros-humble-nav2-bringup \
-        ros-humble-slam-toolbox \
-        ros-humble-ros2-control \
-        ros-humble-image-pipeline \
-        ros-humble-ros2-controllers \
-        ros-humble-teleop-twist-joy \
-        ros-humble-nmea-navsat-driver \
-        ros-humble-robot-localization \
-        ros-humble-controller-manager \
-        ros-humble-gripper-controllers \
-        ros-humble-image-transport-plugins \
-        ros-humble-camera-calibration-parsers && \
-    DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt-get -y -q upgrade && rm -rf /var/lib/apt/lists/*
+        ros-humble-control-toolbox \
+        ros-humble-hardware-interface && \
+        rm -rf /var/lib/apt/lists/* && apt clean
 
-RUN rm -rf /log/* && \
-    git clone https://github.com/Box-Robotics/ros2_numpy.git /opt/ros/local/src/ros2_numpy --depth 1 -b humble && \
-    git clone https://github.com/clydemcqueen/opencv_cam.git /opt/ros/local/src/opencv_cam --depth 1 && \
-    git clone https://github.com/ptrmu/ros2_shared.git /opt/ros/local/src/ros2_shared --depth 1 && \
+RUN git clone https://github.com/Box-Robotics/ros2_numpy.git /opt/ros/local/src/ros2_numpy --depth 1 -b humble && \
     git clone https://github.com/PickNikRobotics/topic_based_ros2_control.git /opt/ros/local/src/topic_based_ros2_control --depth 1 && \
     sed -i 's@std::stod(interface.initial_value);@std::stod(interface.initial_value);\n          joint_states_[index][i] = std::stod(interface.initial_value);@g' /opt/ros/local/src/topic_based_ros2_control/src/topic_based_system.cpp && \
     sed -i 's@diff <= trigger_joint_command_threshold_@diff < trigger_joint_command_threshold_@g' /opt/ros/local/src/topic_based_ros2_control/src/topic_based_system.cpp && \
@@ -91,28 +22,74 @@ RUN rm -rf /log/* && \
     sed -i 's@target_pose_pub->publish(target_pose);@target_pose_pub->publish(target_pose);\n  rclcpp::WallRate loop_rate(10);\n  while(true)\n  {\n    moveit_servo::PoseTrackingStatusCode tracking_status=tracker.moveToPose(lin_tol,rot_tol,0.1);\n    RCLCPP_INFO_STREAM(LOGGER,"Pose tracker exited with status: "<< moveit_servo::POSE_TRACKING_STATUS_CODE_MAP.at(tracking_status));\n    loop_rate.sleep();\n  }@' /tmp/moveit2/moveit_ros/moveit_servo/src/cpp_interface_demo/pose_tracking_demo.cpp && \
     (cd /tmp/moveit2/ && git diff) && \
     mv /tmp/moveit2/moveit_ros/moveit_servo /opt/ros/local/src/moveit_servo && rm -rf /tmp/moveit2 && \
-    bash -x -e -c 'source /opt/ros/humble/setup.bash && cd /opt/ros/local && colcon --log-base /dev/null build --cmake-args -DCMAKE_BUILD_TYPE=Release'
-
-ADD requirements.txt /tmp/requirements.txt
-RUN python3 -m pip install -U pip -vvv && python3 -m pip install -r /tmp/requirements.txt && python3 -m pip cache purge && rm -f /tmp/requirements.txt
-
-RUN curl -L https://raw.githubusercontent.com/DFRobot/DFRobot_INA219/master/Python/RespberryPi/DFRobot_INA219.py -o $(python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')/DFRobot_INA219.py
+    bash -x -e -c 'source /opt/ros/humble/setup.bash && cd /opt/ros/local && colcon --log-base /dev/null build --cmake-args -DCMAKE_BUILD_TYPE=Release --cmake-args -DBUILD_TESTING=OFF'
 
 RUN ARCH=$(dpkg --print-architecture); \
     RELEASE=$(curl --silent "https://api.github.com/repos/distribution/distribution/releases/latest" | jq -r .tag_name); \
     curl --silent -o /tmp/registry.tar.gz -L https://github.com/distribution/distribution/releases/download/${RELEASE}/registry_${RELEASE#v}_linux_${ARCH}.tar.gz && \
-    tar -xzf /tmp/registry.tar.gz -C /usr/bin/ registry && \
-    rm -f /tmp/registry.tar.gz && \
-    mkdir -p /etc/docker && \
-    curl --silent -o /etc/docker/registry.config.yaml -L https://raw.githubusercontent.com/distribution/distribution-library-image/master/config-example.yml && \
-    registry -v
+    tar -xzf /tmp/registry.tar.gz -C /tmp registry
+
+RUN curl --silent -o /tmp/registry.config.yaml -L https://raw.githubusercontent.com/distribution/distribution-library-image/master/config-example.yml
 
 RUN ARCH=$(dpkg --print-architecture); \
     RELEASE=$(curl --silent "https://api.github.com/repos/grpc-ecosystem/grpc-health-probe/releases/latest" | jq -r .tag_name); \
-    curl --silent -o /usr/bin/grpc_health_probe -L https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${RELEASE}/grpc_health_probe-linux-${ARCH} && \
-    chmod +x /usr/bin/grpc_health_probe && \
-    grpc_health_probe -version
+    curl --silent -o /tmp/grpc_health_probe -L https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${RELEASE}/grpc_health_probe-linux-${ARCH} && \
+    chmod +x /tmp/grpc_health_probe
 
+RUN ARCH=$(dpkg --print-architecture); \
+    RELEASE=$(curl --silent "https://api.github.com/repos/caddyserver/caddy/releases/latest" | jq -r .tag_name); \
+    curl --silent -o /tmp/caddy.tar.gz -L https://github.com/caddyserver/caddy/releases/download/${RELEASE}/caddy_${RELEASE#v}_linux_${ARCH}.tar.gz && \
+    tar -xzf /tmp/caddy.tar.gz -C /tmp caddy
+
+FROM ros:humble-ros-core as final
+COPY --from=build /opt/ros/local/install /opt/ros/local/install
+COPY --from=build /tmp/registry /usr/bin/registry
+COPY --from=build /tmp/registry.config.yaml /etc/docker/registry.config.yaml
+COPY --from=build /tmp/grpc_health_probe /usr/bin/grpc_health_probe
+COPY --from=build /tmp/caddy /usr/bin/caddy
 ENV XDG_DATA_HOME=/data
+ENTRYPOINT []
 
-RUN sed -i 's@$ROS_DISTRO@local/install@g' /ros_entrypoint.sh
+RUN DEBIAN_FRONTEND=noninteractive apt -y -q update && \
+    DEBIAN_FRONTEND=noninteractive apt -y -q upgrade --no-install-recommends && \
+    DEBIAN_FRONTEND=noninteractive apt -y -q install --no-install-recommends \
+        curl && \
+        rm -rf /var/lib/apt/lists/* && apt clean
+
+RUN install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --yes --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    chmod a+r /etc/apt/keyrings/docker.gpg && \
+    echo \
+      "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+      "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+      tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+RUN DEBIAN_FRONTEND=noninteractive apt -y -q update && \
+    DEBIAN_FRONTEND=noninteractive apt -y -q install --no-install-recommends \
+        ros-humble-moveit-resources-panda-description \
+        udev \
+        chrony \
+        i2c-tools \
+        redis-server \
+        apt-cacher-ng \
+        auto-apt-proxy \
+        python3-pip \
+        docker-ce-cli \
+        docker-compose-plugin \
+        ros-humble-moveit-ros \
+        ros-humble-topic-tools \
+        ros-humble-vision-msgs \
+        ros-humble-slam-toolbox \
+        ros-humble-moveit-planners \
+        ros-humble-ros2-controllers \
+        ros-humble-tf-transformations \
+        ros-humble-robot-localization \
+        ros-humble-controller-manager \
+        ros-humble-gripper-controllers \
+        ros-humble-robot-state-publisher \
+        ros-humble-moveit-configs-utils && \
+        rm -rf /var/lib/apt/lists/* && apt clean
+
+ADD requirements.txt /tmp/requirements.txt
+RUN python3 -m pip install --no-cache-dir -r /tmp/requirements.txt && rm -f /tmp/requirements.txt
+RUN curl -L https://raw.githubusercontent.com/DFRobot/DFRobot_INA219/master/Python/RespberryPi/DFRobot_INA219.py -o $(python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')/DFRobot_INA219.py

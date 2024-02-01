@@ -1,0 +1,22 @@
+FROM nvcr.io/nvidia/isaac-sim:2023.1.1 as final
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+ENTRYPOINT []
+WORKDIR /
+
+RUN DEBIAN_FRONTEND=noninteractive apt -y -q update && \
+    DEBIAN_FRONTEND=noninteractive apt -y -q upgrade --no-install-recommends && \
+    DEBIAN_FRONTEND=noninteractive apt -y -q install --no-install-recommends \
+        curl \
+        software-properties-common && \
+        rm -rf /var/lib/apt/lists/* && apt clean
+
+RUN add-apt-repository universe && \
+    curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(grep CODENAME /etc/lsb-release | awk -F= '{print $2}') main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
+
+RUN DEBIAN_FRONTEND=noninteractive apt -y -q update && \
+    DEBIAN_FRONTEND=noninteractive apt -y -q upgrade --no-install-recommends && \
+    DEBIAN_FRONTEND=noninteractive apt -y -q install --no-install-recommends \
+        ros-humble-vision-msgs && \
+        rm -rf /var/lib/apt/lists/* && apt clean
