@@ -44,15 +44,8 @@ jobs:
           labels: ${{ steps.docker.outputs.labels }}
           platforms: ${{ matrix.docker == 'docker' && 'linux/arm64,linux/amd64' || 'linux/amd64' }}
           push: true
-
-  final:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
       - uses: actions/github-script@v7
+        if: ${{ matrix.docker == 'docker' }}
         with:
           github-token: ${{ secrets.DOCKER_GITHUB }}
           script: |
