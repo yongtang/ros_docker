@@ -80,21 +80,20 @@ RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
         python3-lgpio \
         docker-ce-cli \
         docker-compose-plugin \
+        ros-humble-moveit \
         ros-humble-bno055 \
-        ros-humble-moveit-ros \
         ros-humble-rplidar-ros \
         ros-humble-topic-tools \
         ros-humble-vision-msgs \
         ros-humble-slam-toolbox \
-        ros-humble-moveit-planners \
         ros-humble-ros2-controllers \
         ros-humble-nmea-navsat-driver \
         ros-humble-tf-transformations \
         ros-humble-robot-localization \
         ros-humble-controller-manager \
         ros-humble-gripper-controllers \
-        ros-humble-robot-state-publisher \
-        ros-humble-moveit-configs-utils && \
+        ros-humble-joint-state-publisher \
+        ros-humble-robot-state-publisher && \
         rm -rf /var/lib/apt/lists/* && apt clean
 
 ADD requirements.txt /tmp/requirements.txt
