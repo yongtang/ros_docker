@@ -67,6 +67,7 @@ RUN install -m 0755 -d /etc/apt/keyrings && \
 RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
     DEBIAN_FRONTEND=noninteractive apt -y -qq install --no-install-recommends \
         ros-humble-moveit-resources-panda-description \
+        jq \
         udev \
         chrony \
         usbutils \
