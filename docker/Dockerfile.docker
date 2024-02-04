@@ -69,11 +69,13 @@ RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
         ros-humble-moveit-resources-panda-description \
         udev \
         chrony \
+        usbutils \
         i2c-tools \
         redis-server \
         apt-cacher-ng \
         auto-apt-proxy \
         python3-pip \
+        python3-smbus \
         docker-ce-cli \
         docker-compose-plugin \
         ros-humble-bno055 \
