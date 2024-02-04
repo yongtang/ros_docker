@@ -7,3 +7,4 @@ tenacity==8.2.3
 transforms3d==0.4.1
 torch==2.2.0
 torchvision==0.17.0
+https://github.com/megapose6d/megapose6d/archive/master.zip
