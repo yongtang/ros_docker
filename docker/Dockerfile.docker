@@ -78,6 +78,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
         python3-pip \
         python3-smbus \
         python3-lgpio \
+        python3-pandas \
+        python3-opencv \
+        python3-tenacity \
         docker-ce-cli \
         docker-compose-plugin \
         ros-humble-moveit \
