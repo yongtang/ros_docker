@@ -76,6 +76,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
         auto-apt-proxy \
         python3-pip \
         python3-smbus \
+        python3-lgpio \
         docker-ce-cli \
         docker-compose-plugin \
         ros-humble-bno055 \
