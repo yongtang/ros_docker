@@ -62,9 +62,13 @@ RUN install -m 0755 -d /etc/apt/keyrings && \
     echo \
       "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
       "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
-      tee /etc/apt/sources.list.d/docker.list > /dev/null
+      tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    curl -o /tmp/cuda-keyring_1.1-1_all.deb -L https://developer.download.nvidia.com/compute/cuda/repos/ubuntu$(grep VERSION_ID /etc/os-release | awk -F= '{print $2}' | tr -d '."')/$(uname -m|sed 's@aarch64@sbsa@g')/cuda-keyring_1.1-1_all.deb && \
+    dpkg -i /tmp/cuda-keyring_1.1-1_all.deb && \
+    rm -rf /tmp/cuda-keyring_1.1-1_all.deb
 
 RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
+    DEBIAN_FRONTEND=noninteractive apt -y -qq upgrade --no-install-recommends && \
     DEBIAN_FRONTEND=noninteractive apt -y -qq install --no-install-recommends \
         ros-humble-moveit-resources-panda-description \
         jq \
@@ -102,3 +106,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
 ADD requirements.txt /tmp/requirements.txt
 RUN python3 -m pip install --no-cache-dir -r /tmp/requirements.txt && rm -f /tmp/requirements.txt
 RUN curl -L https://raw.githubusercontent.com/DFRobot/DFRobot_INA219/master/Python/RespberryPi/DFRobot_INA219.py -o $(python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')/DFRobot_INA219.py
+
+RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
+    DEBIAN_FRONTEND=noninteractive apt -y -qq upgrade --no-install-recommends && \
+    DEBIAN_FRONTEND=noninteractive apt -y -qq install --no-install-recommends \
+        cuda-toolkit-$(python3 -c 'import torch;print(torch.version.cuda.replace(".","-"))') && \
+        rm -rf /var/lib/apt/lists/* && apt clean
