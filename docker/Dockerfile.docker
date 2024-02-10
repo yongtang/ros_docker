@@ -112,3 +112,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
     DEBIAN_FRONTEND=noninteractive apt -y -qq install --no-install-recommends \
         cuda-toolkit-$(python3 -c 'import torch;print(torch.version.cuda.replace(".","-"))') && \
         rm -rf /var/lib/apt/lists/* && apt clean
+
+ENV CUDA_HOME=/usr/local/cuda
+ENV TORCH_CUDA_ARCH_LIST="8.0;8.6;8.9;9.0"
+RUN python3 -m pip install https://github.com/IDEA-Research/GroundingDINO/archive/refs/heads/main.zip
