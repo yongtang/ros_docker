@@ -16,6 +16,7 @@ jobs:
           registry: registry.gitlab.com
           username: ${{ github.actor }}
           password: ${{ secrets.DOCKER_GITLAB }}
+      - uses: jlumbroso/free-disk-space@main
       - uses: actions/checkout@v4
         with:
           repository: yongtang/ros_vision
