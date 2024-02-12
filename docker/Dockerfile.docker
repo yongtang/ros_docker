@@ -80,6 +80,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
         apt-cacher-ng \
         auto-apt-proxy \
         python3-pip \
+        python3-yapf \
         python3-smbus \
         python3-lgpio \
         python3-pandas \
