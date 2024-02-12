@@ -105,7 +105,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
         rm -rf /var/lib/apt/lists/* && apt clean
 
 ADD requirements.txt /tmp/requirements.txt
-RUN python3 -m pip install --no-cache-dir -r /tmp/requirements.txt && rm -f /tmp/requirements.txt
+RUN python3 -m pip install -q --no-cache-dir -r /tmp/requirements.txt && rm -f /tmp/requirements.txt
 RUN curl -L https://raw.githubusercontent.com/DFRobot/DFRobot_INA219/master/Python/RespberryPi/DFRobot_INA219.py -o $(python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')/DFRobot_INA219.py
 
 RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
@@ -114,5 +114,5 @@ RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
         cuda-toolkit-$(python3 -c 'import torch;print(torch.version.cuda.replace(".","-"))') && \
         rm -rf /var/lib/apt/lists/* && apt clean
 
-RUN CUDA_HOME=/usr/local/cuda TORCH_CUDA_ARCH_LIST="8.0;8.6;8.9;9.0" python3 -m pip install --no-deps https://github.com/IDEA-Research/GroundingDINO/archive/refs/heads/main.zip
-RUN python3 -m pip install --no-deps https://github.com/facebookresearch/segment-anything/archive/refs/heads/main.zip
+RUN CUDA_HOME=/usr/local/cuda TORCH_CUDA_ARCH_LIST="8.0;8.6;8.9;9.0" python3 -m pip install -q --no-cache-dir --no-deps https://github.com/IDEA-Research/GroundingDINO/archive/refs/heads/main.zip
+RUN python3 -m pip install -q --no-cache-dir --no-deps https://github.com/facebookresearch/segment-anything/archive/refs/heads/main.zip
