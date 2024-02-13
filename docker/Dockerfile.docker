@@ -94,6 +94,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
         ros-humble-topic-tools \
         ros-humble-vision-msgs \
         ros-humble-slam-toolbox \
+        ros-humble-image-pipeline \
         ros-humble-ros2-controllers \
         ros-humble-nmea-navsat-driver \
         ros-humble-tf-transformations \
@@ -116,3 +117,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
 
 RUN CUDA_HOME=/usr/local/cuda TORCH_CUDA_ARCH_LIST="8.0;8.6;8.9;9.0" python3 -m pip install -q --no-cache-dir --no-deps https://github.com/IDEA-Research/GroundingDINO/archive/refs/heads/main.zip
 RUN python3 -m pip install -q --no-cache-dir --no-deps https://github.com/facebookresearch/segment-anything/archive/refs/heads/main.zip
+RUN mkdir -p /opt/ros/local/model/GroundingDINO && curl -o /opt/ros/local/model/GroundingDINO/groundingdino_swint_ogc.pth -L https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swint_ogc.pth
+RUN mkdir -p /opt/ros/local/model/segment-anything && curl -o /opt/ros/local/model/segment-anything/sam_vit_h_4b8939.pth -L https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
+RUN huggingface-cli download --quiet --local-dir /opt/ros/local/model/bert-base-uncased --local-dir-use-symlinks False bert-base-uncased vocab.txt config.json tokenizer.json model.safetensors pytorch_model.bin tokenizer_config.json && rm -rf /root/.cache/huggingface
