@@ -1,4 +1,4 @@
-name: Build docker image
+name: Build client image
 on:
   schedule:
     - cron: '0 0 * * 0'
@@ -13,8 +13,8 @@ jobs:
       packages: write
     strategy:
       matrix:
-        arch: ["amd64", "arm64"]
-        docker: ["docker"]
+        arch: ["amd64"]
+        docker: ["client"]
       fail-fast: false
     steps:
       - uses: docker/login-action@v3
@@ -38,8 +38,6 @@ jobs:
           images: ghcr.io/${{ github.repository }}/${{ matrix.docker }}
           labels: |
             org.opencontainers.image.title=${{ github.repository }}/${{ matrix.docker }}
-          tags: |
-            type=raw,value=${{ matrix.arch }}
         id: docker
       - uses: docker/build-push-action@v5
         with:
@@ -49,13 +47,3 @@ jobs:
           labels: ${{ steps.docker.outputs.labels }}
           platforms: linux/${{ matrix.arch }}
           push: true
-      - uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.DOCKER_GITHUB }}
-          script: |
-            github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'vision.yml',
-              ref: 'master',
-            })
