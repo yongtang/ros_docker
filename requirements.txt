@@ -3,3 +3,5 @@ grpcio-tools==1.60.1
 grpcio-health-checking==1.60.1
 redis==5.0.1
 gpiozero==2.0
+transforms3d==0.4.1
+huggingface-hub==0.20.3

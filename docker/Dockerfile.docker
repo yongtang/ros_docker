@@ -62,7 +62,10 @@ RUN install -m 0755 -d /etc/apt/keyrings && \
     echo \
       "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
       "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
-      tee /etc/apt/sources.list.d/docker.list > /dev/null
+      tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    curl -o /tmp/cuda-keyring_1.1-1_all.deb -L https://developer.download.nvidia.com/compute/cuda/repos/ubuntu$(grep VERSION_ID /etc/os-release | awk -F= '{print $2}' | tr -d '."')/$(uname -m|sed 's@aarch64@sbsa@g')/cuda-keyring_1.1-1_all.deb && \
+    dpkg -i /tmp/cuda-keyring_1.1-1_all.deb && \
+    rm -rf /tmp/cuda-keyring_1.1-1_all.deb
 
 RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
     DEBIAN_FRONTEND=noninteractive apt -y -qq install --no-install-recommends \
@@ -100,6 +103,19 @@ RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
         ros-humble-robot-state-publisher && \
         rm -rf /var/lib/apt/lists/* && apt clean
 
+RUN python3 -m pip install -q --no-cache-dir -U pip
+
 ADD requirements.txt /tmp/requirements.txt
 RUN python3 -m pip install -q --no-cache-dir -r /tmp/requirements.txt && rm -f /tmp/requirements.txt
 RUN curl -L https://raw.githubusercontent.com/DFRobot/DFRobot_INA219/master/Python/RespberryPi/DFRobot_INA219.py -o /usr/local/lib/python3.8/dist-packages/DFRobot_INA219.py
+
+RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
+    DEBIAN_FRONTEND=noninteractive apt -y -qq install --no-install-recommends \
+        cuda-toolkit-$(python3 -c 'import torch;print(torch.version.cuda.replace(".","-"))') && \
+        rm -rf /var/lib/apt/lists/* && apt clean
+
+RUN CUDA_HOME=/usr/local/cuda TORCH_CUDA_ARCH_LIST="8.0;8.6;8.9;9.0" python3 -m pip install -q --no-cache-dir --no-deps https://github.com/IDEA-Research/GroundingDINO/archive/refs/heads/main.zip
+RUN python3 -m pip install -q --no-cache-dir --no-deps https://github.com/facebookresearch/segment-anything/archive/refs/heads/main.zip
+RUN mkdir -p /opt/ros/local/model/GroundingDINO && curl -o /opt/ros/local/model/GroundingDINO/groundingdino_swint_ogc.pth -L https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swint_ogc.pth
+RUN mkdir -p /opt/ros/local/model/segment-anything && curl -o /opt/ros/local/model/segment-anything/sam_vit_h_4b8939.pth -L https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
+RUN huggingface-cli download --quiet --local-dir /opt/ros/local/model/bert-base-uncased --local-dir-use-symlinks False bert-base-uncased vocab.txt config.json tokenizer.json model.safetensors pytorch_model.bin tokenizer_config.json && rm -rf /root/.cache/huggingface
