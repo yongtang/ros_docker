@@ -1,22 +1,4 @@
-FROM ubuntu:20.04 as base
-ENV LANG=C.UTF-8
-ENV LC_ALL=C.UTF-8
-
-RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
-    DEBIAN_FRONTEND=noninteractive apt -y -qq upgrade --no-install-recommends && \
-    DEBIAN_FRONTEND=noninteractive apt -y -qq install --no-install-recommends \
-        curl \
-        gpg-agent \
-        software-properties-common && \
-        rm -rf /var/lib/apt/lists/* && apt clean
-
-RUN add-apt-repository universe && \
-    curl -sSL https://isaac.download.nvidia.com/isaac-ros/repos.key | apt-key add - && \
-    echo "deb https://isaac.download.nvidia.com/isaac-ros/ubuntu/main $(grep CODENAME /etc/lsb-release | awk -F= '{print $2}') main" | tee -a /etc/apt/sources.list && \
-    curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(grep CODENAME /etc/lsb-release | awk -F= '{print $2}') main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
-
-FROM base as build
+FROM ros:humble as build
 
 RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
     DEBIAN_FRONTEND=noninteractive apt -y -qq upgrade --no-install-recommends && \
@@ -59,7 +41,7 @@ RUN ARCH=$(dpkg --print-architecture); \
     curl --silent -o /tmp/caddy.tar.gz -L https://github.com/caddyserver/caddy/releases/download/${RELEASE}/caddy_${RELEASE#v}_linux_${ARCH}.tar.gz && \
     tar -xzf /tmp/caddy.tar.gz -C /tmp caddy
 
-FROM build as final
+FROM ros:humble-ros-core as final
 COPY --from=build /opt/ros/local/install /opt/ros/local/install
 COPY --from=build /tmp/registry /usr/bin/registry
 COPY --from=build /tmp/registry.config.yaml /etc/docker/registry.config.yaml
@@ -100,6 +82,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
         python3-pip \
         python3-yapf \
         python3-smbus \
+        python3-lgpio \
         python3-pandas \
         python3-opencv \
         python3-tenacity \
@@ -122,11 +105,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
         ros-humble-robot-state-publisher && \
         rm -rf /var/lib/apt/lists/* && apt clean
 
-RUN python3 -m pip install -q --no-cache-dir -U pip
-
 ADD requirements.txt /tmp/requirements.txt
 RUN python3 -m pip install -q --no-cache-dir -r /tmp/requirements.txt && rm -f /tmp/requirements.txt
-RUN curl -L https://raw.githubusercontent.com/DFRobot/DFRobot_INA219/master/Python/RespberryPi/DFRobot_INA219.py -o /usr/local/lib/python3.8/dist-packages/DFRobot_INA219.py
+RUN curl -L https://raw.githubusercontent.com/DFRobot/DFRobot_INA219/master/Python/RespberryPi/DFRobot_INA219.py -o $(python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')/DFRobot_INA219.py
 
 RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
     DEBIAN_FRONTEND=noninteractive apt -y -qq upgrade --no-install-recommends && \
