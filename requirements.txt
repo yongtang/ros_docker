@@ -1,5 +1,5 @@
 grpcio==1.62.0
-grpcio-tools==1.60.1
+grpcio-tools==1.62.0
 grpcio-health-checking==1.60.1
 redis==5.0.2
 gpiozero==2.0.1
