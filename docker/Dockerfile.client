@@ -20,6 +20,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
     DEBIAN_FRONTEND=noninteractive apt -y -qq install --no-install-recommends \
         ros-humble-vision-msgs \
         ros-humble-tf2-ros-py \
-        ros-humble-tf-transformations \
-        python3-pip && \
+        ros-humble-tf-transformations && \
         rm -rf /var/lib/apt/lists/* && apt clean
+RUN /isaac-sim/kit/python/bin/python3 -m pip install -q --no-cache-dir --no-deps -U transforms3d
