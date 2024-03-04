@@ -18,5 +18,9 @@ RUN add-apt-repository universe && \
 RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
     DEBIAN_FRONTEND=noninteractive apt -y -qq upgrade --no-install-recommends && \
     DEBIAN_FRONTEND=noninteractive apt -y -qq install --no-install-recommends \
-        ros-humble-vision-msgs && \
+        ros-humble-vision-msgs \
+        ros-humble-tf2-ros-py \
+        ros-humble-tf-transformations \
+        python3-pip && \
         rm -rf /var/lib/apt/lists/* && apt clean
+RUN python3 -m pip install -q --no-cache-dir --no-deps -U pip transforms3d
