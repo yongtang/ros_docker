@@ -11,5 +11,5 @@ timm==0.9.16
 torch==2.2.2
 torchvision==0.17.2
 transformers==4.40.2
-scikit-image==0.22.0
+scikit-image==0.23.2
 open3d==0.18.0
