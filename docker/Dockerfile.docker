@@ -1,123 +1,18 @@
-FROM ros:humble as build
+FROM nvcr.io/nvidia/isaac/ros:x86_64-ros2_humble_45d368cdbbe4a484643464d0d492c764 AS build-amd64
+FROM nvcr.io/nvidia/isaac/ros:aarch64-ros2_humble_692ceb1a0a35fe8a1f37641bab978508 AS build-arm64
+
+FROM build-$TARGETARCH AS build
 
 RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
-    DEBIAN_FRONTEND=noninteractive apt -y -qq upgrade --no-install-recommends && \
     DEBIAN_FRONTEND=noninteractive apt -y -qq install --no-install-recommends \
-        jq \
-        git \
-        ros-dev-tools \
-        ros-humble-moveit \
-        ros-humble-control-toolbox \
-        ros-humble-hardware-interface && \
+        python3-pip && \
         rm -rf /var/lib/apt/lists/* && apt clean
 
-RUN git clone https://github.com/Box-Robotics/ros2_numpy.git /opt/ros/local/src/ros2_numpy --depth 1 -b humble && \
-    git clone https://github.com/PickNikRobotics/topic_based_ros2_control.git /opt/ros/local/src/topic_based_ros2_control --depth 1 && \
-    sed -i 's@std::stod(interface.initial_value);@std::stod(interface.initial_value);\n          joint_states_[index][i] = std::stod(interface.initial_value);@g' /opt/ros/local/src/topic_based_ros2_control/src/topic_based_system.cpp && \
-    sed -i 's@diff <= trigger_joint_command_threshold_@diff < trigger_joint_command_threshold_@g' /opt/ros/local/src/topic_based_ros2_control/src/topic_based_system.cpp && \
-    (cd /opt/ros/local/src/topic_based_ros2_control/ && git diff) && \
-    git clone https://github.com/ros-planning/moveit2.git /tmp/moveit2 --depth 1 -b humble && \
-    sed -i 's@^  target_pose.pose.position.x += 0.1;@  // target_pose.pose.position.x += 0.1;@' /tmp/moveit2/moveit_ros/moveit_servo/src/cpp_interface_demo/pose_tracking_demo.cpp && \
-    sed -i '/Run the pose tracking in a new thread/,+21d' /tmp/moveit2/moveit_ros/moveit_servo/src/cpp_interface_demo/pose_tracking_demo.cpp && \
-    sed -i 's@target_pose_pub->publish(target_pose);@target_pose_pub->publish(target_pose);\n  rclcpp::WallRate loop_rate(10);\n  while(true)\n  {\n    moveit_servo::PoseTrackingStatusCode tracking_status=tracker.moveToPose(lin_tol,rot_tol,0.1);\n    RCLCPP_INFO_STREAM(LOGGER,"Pose tracker exited with status: "<< moveit_servo::POSE_TRACKING_STATUS_CODE_MAP.at(tracking_status));\n    loop_rate.sleep();\n  }@' /tmp/moveit2/moveit_ros/moveit_servo/src/cpp_interface_demo/pose_tracking_demo.cpp && \
-    (cd /tmp/moveit2/ && git diff) && \
-    mv /tmp/moveit2/moveit_ros/moveit_servo /opt/ros/local/src/moveit_servo && rm -rf /tmp/moveit2 && \
+RUN git clone https://github.com/yongtang/joint_state_transformer.git /opt/ros/local/src/joint_state_transformer --depth 1 && \
+    git clone https://github.com/yongtang/joint_state_plugin_controller.git /opt/ros/local/src/joint_state_plugin_controller --depth 1 && \
     bash -x -e -c 'source /opt/ros/humble/setup.bash && cd /opt/ros/local && colcon --log-base /dev/null build --cmake-args -DCMAKE_BUILD_TYPE=Release --cmake-args -DBUILD_TESTING=OFF'
 
-RUN ARCH=$(dpkg --print-architecture); \
-    RELEASE=$(curl --silent "https://api.github.com/repos/distribution/distribution/releases/latest" | jq -r .tag_name); \
-    curl --silent -o /tmp/registry.tar.gz -L https://github.com/distribution/distribution/releases/download/${RELEASE}/registry_${RELEASE#v}_linux_${ARCH}.tar.gz && \
-    tar -xzf /tmp/registry.tar.gz -C /tmp registry
+RUN python3 -m pip install -U pip && \
+    python3 -m pip install -U -r /opt/ros/local/src/joint_state_transformer/requirements.txt && \
+    python3 -m pip install -U -r /opt/ros/local/src/joint_state_plugin_controller/requirements.txt
 
-RUN curl --silent -o /tmp/registry.config.yaml -L https://raw.githubusercontent.com/distribution/distribution-library-image/master/config-example.yml
-
-RUN ARCH=$(dpkg --print-architecture); \
-    RELEASE=$(curl --silent "https://api.github.com/repos/grpc-ecosystem/grpc-health-probe/releases/latest" | jq -r .tag_name); \
-    curl --silent -o /tmp/grpc_health_probe -L https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${RELEASE}/grpc_health_probe-linux-${ARCH} && \
-    chmod +x /tmp/grpc_health_probe
-
-RUN ARCH=$(dpkg --print-architecture); \
-    RELEASE=$(curl --silent "https://api.github.com/repos/caddyserver/caddy/releases/latest" | jq -r .tag_name); \
-    curl --silent -o /tmp/caddy.tar.gz -L https://github.com/caddyserver/caddy/releases/download/${RELEASE}/caddy_${RELEASE#v}_linux_${ARCH}.tar.gz && \
-    tar -xzf /tmp/caddy.tar.gz -C /tmp caddy
-
-FROM ros:humble-ros-core as final
-COPY --from=build /opt/ros/local/install /opt/ros/local/install
-COPY --from=build /tmp/registry /usr/bin/registry
-COPY --from=build /tmp/registry.config.yaml /etc/docker/registry.config.yaml
-COPY --from=build /tmp/grpc_health_probe /usr/bin/grpc_health_probe
-COPY --from=build /tmp/caddy /usr/bin/caddy
-ENV XDG_DATA_HOME=/data
-ENTRYPOINT []
-
-RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
-    DEBIAN_FRONTEND=noninteractive apt -y -qq upgrade --no-install-recommends && \
-    DEBIAN_FRONTEND=noninteractive apt -y -qq install --no-install-recommends \
-        curl && \
-        rm -rf /var/lib/apt/lists/* && apt clean
-
-RUN install -m 0755 -d /etc/apt/keyrings && \
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --yes --dearmor -o /etc/apt/keyrings/docker.gpg && \
-    chmod a+r /etc/apt/keyrings/docker.gpg && \
-    echo \
-      "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-      "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
-      tee /etc/apt/sources.list.d/docker.list > /dev/null && \
-    curl -o /tmp/cuda-keyring_1.1-1_all.deb -L https://developer.download.nvidia.com/compute/cuda/repos/ubuntu$(grep VERSION_ID /etc/os-release | awk -F= '{print $2}' | tr -d '."')/$(uname -m|sed 's@aarch64@sbsa@g')/cuda-keyring_1.1-1_all.deb && \
-    dpkg -i /tmp/cuda-keyring_1.1-1_all.deb && \
-    rm -rf /tmp/cuda-keyring_1.1-1_all.deb
-
-RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
-    DEBIAN_FRONTEND=noninteractive apt -y -qq upgrade --no-install-recommends && \
-    DEBIAN_FRONTEND=noninteractive apt -y -qq install --no-install-recommends \
-        ros-humble-moveit-resources-panda-description \
-        jq \
-        udev \
-        chrony \
-        usbutils \
-        i2c-tools \
-        redis-server \
-        apt-cacher-ng \
-        auto-apt-proxy \
-        python3-pip \
-        python3-yapf \
-        python3-smbus \
-        python3-lgpio \
-        python3-pandas \
-        python3-opencv \
-        python3-tenacity \
-        docker-ce-cli \
-        docker-compose-plugin \
-        ros-humble-moveit \
-        ros-humble-bno055 \
-        ros-humble-rplidar-ros \
-        ros-humble-topic-tools \
-        ros-humble-vision-msgs \
-        ros-humble-slam-toolbox \
-        ros-humble-image-pipeline \
-        ros-humble-ros2-controllers \
-        ros-humble-nmea-navsat-driver \
-        ros-humble-tf-transformations \
-        ros-humble-robot-localization \
-        ros-humble-controller-manager \
-        ros-humble-gripper-controllers \
-        ros-humble-joint-state-publisher \
-        ros-humble-robot-state-publisher && \
-        rm -rf /var/lib/apt/lists/* && apt clean
-
-ADD requirements.txt /tmp/requirements.txt
-RUN python3 -m pip install -q --no-cache-dir -r /tmp/requirements.txt && rm -f /tmp/requirements.txt
-RUN curl -L https://raw.githubusercontent.com/DFRobot/DFRobot_INA219/master/Python/RespberryPi/DFRobot_INA219.py -o $(python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')/DFRobot_INA219.py
-
-RUN DEBIAN_FRONTEND=noninteractive apt -y -qq update && \
-    DEBIAN_FRONTEND=noninteractive apt -y -qq upgrade --no-install-recommends && \
-    DEBIAN_FRONTEND=noninteractive apt -y -qq install --no-install-recommends \
-        cuda-toolkit-$(python3 -c 'import torch;print(torch.version.cuda.replace(".","-"))') && \
-        rm -rf /var/lib/apt/lists/* && apt clean
-
-RUN CUDA_HOME=/usr/local/cuda TORCH_CUDA_ARCH_LIST="8.0;8.6;8.9;9.0" python3 -m pip install -q --no-cache-dir --no-deps https://github.com/IDEA-Research/GroundingDINO/archive/refs/heads/main.zip
-RUN python3 -m pip install -q --no-cache-dir --no-deps https://github.com/facebookresearch/segment-anything/archive/refs/heads/main.zip
-RUN mkdir -p /opt/ros/local/model/GroundingDINO && curl -o /opt/ros/local/model/GroundingDINO/groundingdino_swint_ogc.pth -L https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swint_ogc.pth
-RUN mkdir -p /opt/ros/local/model/segment-anything && curl -o /opt/ros/local/model/segment-anything/sam_vit_h_4b8939.pth -L https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
-RUN huggingface-cli download --quiet --local-dir /opt/ros/local/model/bert-base-uncased --local-dir-use-symlinks False bert-base-uncased vocab.txt config.json tokenizer.json model.safetensors pytorch_model.bin tokenizer_config.json && rm -rf /root/.cache/huggingface
-RUN huggingface-cli download --quiet --local-dir /opt/ros/local/model/dpt-large --local-dir-use-symlinks False Intel/dpt-large preprocessor_config.json config.json model.safetensors pytorch_model.bin && rm -rf /root/.cache/huggingface
